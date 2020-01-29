@@ -1,0 +1,163 @@
+version: "3"
+
+services:
+  zabbix-server:
+    restart: unless-stopped
+    container_name: zabbix-server
+    hostname: zabbix-server
+    image: zabbix-server
+    build:
+      context: zabbix-server
+      dockerfile: Dockerfile
+      args:
+        - ORACLE_WALLET_ZIP
+        - ORACLE_SERVICE_NAME
+        - ORACLE_USER
+        - ORACLE_PASSWORD
+    ports:
+      - "10051:10051"
+    networks:
+      net_backend:
+      net_frontend:
+    volumes:
+      - app:/var/www/html
+      - wallet:/usr/lib/oracle/19.5/client64/network/admin
+      - alertscripts:/etc/zabbix/alertscripts
+      - externalscripts:/etc/zabbix/externalscripts
+    healthcheck:
+      test: [ "CMD", "/healthcheck.sh" ]
+      interval: 1m
+      timeout: 5s
+      retries: 30
+
+  zabbix-php:
+    depends_on:
+      - zabbix-server
+    restart: unless-stopped
+    container_name: zabbix-php
+    hostname: zabbix-php
+    image: zabbix-php
+    build:
+      context: zabbix-php
+      dockerfile: Dockerfile
+      args:
+        - PHP_TZ
+        - ORACLE_WALLET_ZIP
+        - ORACLE_SERVICE_NAME
+        - ORACLE_USER
+        - ORACLE_PASSWORD
+    networks:
+      net_backend:
+      net_frontend:
+    volumes:
+      - app:/var/www/html
+      - sock:/sock
+      - wallet:/usr/lib/oracle/19.5/client64/network/admin
+    healthcheck:
+      test: [ "CMD", "/healthcheck.sh" ]
+      interval: 30s
+      timeout: 3s
+      retries: 10
+
+  zabbix-nginx:
+    depends_on:
+      - zabbix-php
+    restart: unless-stopped
+    container_name: zabbix-nginx
+    hostname: zabbix-nginx
+    image: zabbix-nginx
+    build:
+      context: zabbix-nginx
+      args:
+        - ZABBIX_SERVER_NAME
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      net_backend:
+      net_frontend:
+    volumes:
+      - app:/var/www/html
+      - letsencrypt:/etc/letsencrypt
+      - sock:/sock
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/ping" ]
+      interval: 30s
+      timeout: 3s
+      retries: 10
+
+  zabbix-certbot:
+    depends_on:
+      - zabbix-nginx
+    restart: "no"
+    container_name: zabbix-certbot
+    hostname: zabbix-certbot
+    image: zabbix-certbot
+    build:
+      context: zabbix-certbot
+      args:
+        - CERTBOT_EMAIL
+        - ZABBIX_SERVER_NAME
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - app:/var/www/html
+    networks:
+      net_frontend:
+    #command: certonly --webroot --webroot-path=/var/www/html --email $CERTBOT_EMAIL --agree-tos -d $ZABBIX_SERVER_NAME
+
+  zabbix-agent:
+    restart: unless-stopped
+    container_name: zabbix-agent
+    hostname: zabbix-agent
+    image: zabbix-agent
+    build:
+      context: zabbix-agent
+      dockerfile: Dockerfile
+    ports:
+      - "10050:10050"
+    networks:
+      net_backend:
+    privileged: true
+    pid: "host"
+    healthcheck:
+      test: [ "CMD", "/healthcheck.sh" ]
+      interval: 1m
+      timeout: 3s
+      retries: 10
+
+networks:
+  net_frontend:
+    driver: bridge
+  net_backend:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    internal: true
+
+volumes:
+  app:
+  sock:
+  wallet:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $ZABBIX_HOST_PATH/wallet
+  alertscripts:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $ZABBIX_HOST_PATH/alertscripts
+  externalscripts:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $ZABBIX_HOST_PATH/externalscripts
+  letsencrypt:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $ZABBIX_HOST_PATH/letsencrypt

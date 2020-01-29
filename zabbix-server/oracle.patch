@@ -1,0 +1,43 @@
+--- src/libs/zbxdb/db.c.ORIG	2019-12-19 08:46:15.000000000 +0000
++++ src/libs/zbxdb/db.c	2020-01-07 14:06:03.415244069 +0000
+@@ -531,10 +531,9 @@
+ 
+ 	zbx_vector_ptr_create(&oracle.db_results);
+ 
+-	/* connection string format: [//]host[:port][/service name] */
+-
+-	if ('\0' != *host)
++	if (NULL != host && '\0' != *host)
+ 	{
++		/* Oracle EZCONNECT naming is used if DBHost is defined: [//]host[:port][/service name] */
+ 		connect = zbx_strdcatf(connect, "//%s", host);
+ 		if (0 != port)
+ 			connect = zbx_strdcatf(connect, ":%d", port);
+@@ -542,7 +541,12 @@
+ 			connect = zbx_strdcatf(connect, "/%s", dbname);
+ 	}
+ 	else
+-		ret = ZBX_DB_FAIL;
++		if (NULL != dbname && '\0' != *dbname) {
++			/* Connect via the tnsnames.ora service name lookup (DBName is the service name) */
++			connect = zbx_strdup(connect, dbname);
++		}
++		else
++			ret = ZBX_DB_FAIL;
+ 
+ 	while (ZBX_DB_OK == ret)
+ 	{
+--- frontends/php/include/db.inc.php.ORIG	2020-01-07 14:12:52.766986289 +0000
++++ frontends/php/include/db.inc.php	2020-01-07 14:19:17.658504104 +0000
+@@ -114,6 +114,11 @@
+ 						$connect .= '/'.$DB['DATABASE'];
+ 					}
+ 				}
++				else {
++					if ($DB['DATABASE']) {
++						$connect = $DB['DATABASE'];
++					}
++				}
+ 
+ 				$DB['DB'] = @oci_connect($DB['USER'], $DB['PASSWORD'], $connect, 'UTF8');
+ 				if ($DB['DB']) {
