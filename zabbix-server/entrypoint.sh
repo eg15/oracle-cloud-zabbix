@@ -40,12 +40,7 @@ count=$(sqlplus -s $ORACLE_USER/$ORACLE_PASSWORD@$ORACLE_SERVICE_NAME <<-EOF
 EOF
 )
 if [ $? -ne 0 ]; then
-  echo "SQL*Plus error while checking if USERS table exists: $?"
-  echo "sqlplus -s $ORACLE_USER/$ORACLE_PASSWORD@$ORACLE_SERVICE_NAME"
-  echo "Wallet: $ORACLE_WALLET_ZIP"
-  sqlplus $ORACLE_USER/$ORACLE_PASSWORD@$ORACLE_SERVICE_NAME </dev/null
-  echo "============================================================="
-  echo ""
+  echo "SQL*Plus error while checking if USERS table exists"
   exit 1
 fi
 if [ "$count" -eq 0 ]; then
@@ -58,14 +53,14 @@ if [ "$count" -eq 0 ]; then
 	exit;
 EOF
   if [ $? -ne 0 ]; then
-    echo "SQL*Plus error while populating the Zabbix schema: $?"
+    echo "SQL*Plus error while populating the Zabbix schema"
     exit 1
   fi
   (
     cd /tmp/oracle/images
     sqlldr $ORACLE_USER/$ORACLE_PASSWORD@$ORACLE_SERVICE_NAME control=IMAGES_DATA_TABLE.ctl
     if [ $? -ne 0 ]; then
-      echo "SQL*Loader error while uploading images: $?"
+      echo "SQL*Loader error while uploading images"
       exit 1
     fi
   )
@@ -77,7 +72,7 @@ EOF
 	exit;
 EOF
   if [ $? -ne 0 ]; then
-    echo "SQL*Plus error while uploading data.sql: $?"
+    echo "SQL*Plus error while uploading data.sql"
     exit 1
   fi
   #rm -rf /tmp/oracle
