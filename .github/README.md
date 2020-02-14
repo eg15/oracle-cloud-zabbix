@@ -7,9 +7,10 @@ It was interesting to test how to deploy Zabbix to Oracle Always Free instance u
 
 ## Getting Started
 
-These instructions will get you a Zabbix Server running in Oracle Cloud less than in 15 minutes. It can be used for testing, development purposes, or
-for monitoring a small fleet of servers. I monitor about 20 servers and don't see major issues. The most important thing you should keep in mind is that
-**Always Free Oracle Database won't let you open more than 20 simultaneous connections**. Unfortunately out-of-the-box Zabbix opens by default more than 20 so I had to reduce its set of features in `zabbix_server.conf` to make it start. It still sends me an email with _ORA-00018: maximum number of sessions exceeded_ once in a while.
+These instructions will get you a Zabbix Server running in Oracle Cloud less than in 15 minutes.
+It can be used for testing, development purposes, or for monitoring a small fleet of servers.
+The most important thing you should keep in mind is that **Always Free Oracle Database won't let you open more than 20 simultaneous connections**.
+Unfortunately out-of-the-box Zabbix opens by default more than 20 so I had to reduce its set of features in `zabbix_server.conf` to make it start. It still sends me an email with _ORA-00018: maximum number of sessions exceeded_ once in a while.
 
 ### Prerequisites
 
@@ -114,3 +115,4 @@ To allow communication between `zabbix-agent` and `zabbix-server` containers, yo
 Open your *Zabbix server* and update *Agent interfaces* as shown at the following screenshot (*Connect to*: **DNS**, *DNS name*: `zabbix-agent`).
 
 [<img src="12_zabbix_server_agent.png" width="20%"/>](12_zabbix_server_agent.png "Change Zabbix agent interface")
+
