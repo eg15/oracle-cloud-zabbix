@@ -1,4 +1,4 @@
-version: "3"
+version: "2.3"
 
 services:
   zabbix-server:
@@ -24,6 +24,7 @@ services:
       - wallet:/usr/lib/oracle/19.5/client64/network/admin
       - alertscripts:/etc/zabbix/alertscripts
       - externalscripts:/etc/zabbix/externalscripts
+    mem_limit: 512m
     healthcheck:
       test: [ "CMD", "/healthcheck.sh" ]
       interval: 1m
@@ -53,6 +54,7 @@ services:
       - app:/var/www/html
       - sock:/sock
       - wallet:/usr/lib/oracle/19.5/client64/network/admin
+    mem_limit: 128m
     healthcheck:
       test: [ "CMD", "/healthcheck.sh" ]
       interval: 30s
@@ -80,6 +82,7 @@ services:
       - app:/var/www/html
       - letsencrypt:/etc/letsencrypt
       - sock:/sock
+    mem_limit: 64m
     healthcheck:
       test: [ "CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/ping" ]
       interval: 30s
@@ -101,6 +104,7 @@ services:
     volumes:
       - letsencrypt:/etc/letsencrypt
       - app:/var/www/html
+    mem_limit: 64m
     networks:
       net_frontend:
     #command: certonly --webroot --webroot-path=/var/www/html --email $CERTBOT_EMAIL --agree-tos -d $ZABBIX_SERVER_NAME
@@ -119,6 +123,7 @@ services:
       net_backend:
     privileged: true
     pid: "host"
+    mem_limit: 64m
     healthcheck:
       test: [ "CMD", "/healthcheck.sh" ]
       interval: 1m
