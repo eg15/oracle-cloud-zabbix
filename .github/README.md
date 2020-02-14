@@ -80,7 +80,7 @@ At least you want to pass incoming traffic:
 
 Just run `build.sh` and got get yourself a cuppa.
 
-After the containers have started copy `Wallet_ZABBIX.zip` to `$ZABBIX_HOST_PATH/wallet/`—it will be unzipped automatically and the container will run healthy soon.
+After the containers have started copy `Wallet_ZABBIX.zip` to `$ZABBIX_HOST_PATH/wallet/`—it will be unzipped automatically and `zabbix-server` container will run healthy soon.
 
 #### Configuration
 
