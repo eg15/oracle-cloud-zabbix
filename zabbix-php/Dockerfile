@@ -13,7 +13,7 @@ COPY healthcheck.sh /
 RUN set -xue \
     && yum -y install oracle-release-el7 oracle-php-release-el7 oracle-epel-release-el7 \
     && yum-config-manager --enable ol7_oracle_instantclient \
-    && yum -y install oracle-instantclient19.5-basic oracle-instantclient19.5-devel oracle-instantclient19.5-sqlplus ssmtp php-fpm php-oci8-12c php-gd php-xml php-bcmath php-mbstring \
+    && yum -y install oracle-instantclient19.5-basic oracle-instantclient19.5-devel oracle-instantclient19.5-sqlplus ssmtp php-fpm php-oci8-19c php-gd php-xml php-bcmath php-mbstring \
     && rm -rf /var/cache/yum \
     && groupadd --gid 3000 zabbix \
     && adduser --uid 3000 --gid 3000 zabbix \
